@@ -22,5 +22,5 @@ docker buildx inspect --bootstrap
 
 ### Custom hugo-extended image
 ```
-docker buildx build --platform linux/amd64,linux/arm64 -t sircas/hugo-extended:0.84.3 . --push 
+docker buildx build --platform linux/amd64,linux/arm64 --build-arg HUGO_VERSION=0.89.4 -t sircas/hugo-extended:0.89.4 . --push
 ```

@@ -1,23 +1,29 @@
-﻿# syntax=docker/dockerfile:1
+﻿#
+# Step 1: Build gohugo from source
+#
+FROM --platform=$TARGETPLATFORM golang:alpine as hugo-build
+ARG HUGO_VERSION
 
-#
-# Build gohugo from source
-#
-FROM --platform=$TARGETPLATFORM docker.io/buildpack-deps:21.04 as hugo-build
 WORKDIR /gohugo
 
-ARG HUGO_VERSION=0.88.1
+# Install git.
+# Git is required for fetching the dependencies.
+RUN apk update && apk add --no-cache alpine-sdk
 
-RUN apt-get update && apt-get install -y build-essential golang-go
-
-RUN curl -fsSLO --compressed "https://github.com/gohugoio/hugo/archive/refs/tags/v${HUGO_VERSION}.tar.gz"
+RUN wget -O "v${HUGO_VERSION}.tar.gz" "https://github.com/gohugoio/hugo/archive/refs/tags/v${HUGO_VERSION}.tar.gz"
 RUN tar -C /gohugo -xzf "v${HUGO_VERSION}.tar.gz" --strip-components=1
-RUN go build --tags extended -o /usr/local/bin/hugo
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s" --tags extended -o /usr/local/bin/hugo
 
 #
-# Copy binary to clean image
+# Step 2: Copy binary to clean image
 #
-FROM --platform=$TARGETPLATFORM docker.io/buildpack-deps:21.04 as hugo-image
+FROM --platform=$TARGETPLATFORM scratch as hugo-image
 ARG HUGO_VERSION
 ENV HUGO_VERSION=${HUGO_VERSION}
+
+LABEL org.opencontainers.image.source https://github.com/SirCAS/hugo-extended-docker
+
+# Copy our static executable
 COPY --from=hugo-build /usr/local/bin/hugo /usr/local/bin/hugo
+
+ENTRYPOINT ["/usr/local/bin/hugo"]
