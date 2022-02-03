@@ -1,4 +1,4 @@
-﻿#
+#
 # Step 1: Build gohugo from source
 #
 FROM --platform=$TARGETPLATFORM golang:alpine as hugo-build
@@ -19,7 +19,7 @@ RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s" --tags exten
 #
 # Step 2: Copy binary to clean image
 #
-FROM --platform=$TARGETPLATFORM alpine:3.13 as hugo-image
+FROM --platform=$TARGETPLATFORM alpine:3 as hugo-image
 ARG HUGO_VERSION
 ENV HUGO_VERSION=${HUGO_VERSION}
 
